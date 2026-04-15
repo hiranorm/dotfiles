@@ -6,70 +6,60 @@
 
 - **ブログ名**: ゆるディープ（ゆるふわディープラーニングブログ）
 - **著者**: ひらノルム
-- **リポジトリ（旧）**: `blog_to_netlify/`（GitLab: `git@gitlab.com:shingetsu-hajime/blog_to_netlify.git`）
-- **リポジトリ（新・移行先）**: `yurudeep/`（GitHub: https://github.com/hiranorm/yurudeep）
-- **デプロイ**: GitLabへのpushで自動的にNetlifyへデプロイされる（移行後はGitHubから）
+- **リポジトリ**: `yurudeep/`（GitHub: https://github.com/hiranorm/yurudeep）
+- **デプロイ**: GitHubへのpushで自動的にNetlifyへデプロイされる
+
 
 ## リポジトリ構成
 
 ```
-blog_to_netlify/
-├── .vuepress/
-│   ├── config.ts        # VuePressの設定（テーマ・navbar・コメント等）
-│   ├── plugins/         # カスタムプラグイン（SEOなど）
-│   ├── public/          # 静的ファイル（画像・favicon等）
-│   └── styles/          # カスタムCSS
-├── blogs/
-│   ├── deeplearning/    # 機械学習・AI系記事
-│   │   └── YYYY/YYYYMMDD.md
-│   ├── automation/      # 自動化・ツール系記事
-│   │   └── YYYY/YYYYMMDD.md
-│   └── other/           # その他の記事
-│       └── YYYY/YYYYMMDD.md
-├── docs/
-│   ├── guide/           # ガイドページ
-│   └── profile/         # 自己紹介・プロフィールページ
-├── dist/                # ビルド成果物（Netlifyにデプロイされる）
+yurudeep/
+├── src/
+│   ├── content/
+│   │   └── posts/           # 記事ファイル
+│   │       ├── deeplearning/
+│   │       │   └── YYYY/YYYYMMDD.md
+│   │       ├── automation/
+│   │       │   └── YYYY/YYYYMMDD.md
+│   │       └── other/
+│   │           └── YYYY/YYYYMMDD.md
+│   ├── components/
+│   ├── layouts/
+│   ├── pages/
+│   └── config.ts            # サイト設定
+├── public/
+│   ├── blogimg/             # 記事用画像
+│   └── favicon/
+├── dist/                    # ビルド成果物（Netlifyにデプロイされる）
 ├── package.json
-└── README.md            # トップページのフロントマター（VuePress形式）
+└── astro.config.mjs
 ```
 
 ## 技術スタック
 
-- **フレームワーク**: VuePress 2.0.0-beta.60
-- **テーマ**: vuepress-theme-reco 2.0.0-beta.53
-- **バンドラー**: Vite
-- **コメント**: Valine（LeanCloud）
-- **言語設定**: 日本語（`ja-JP`）
+- **フレームワーク**: Astro
+- **テーマ**: Fuwari
+- **パッケージマネージャ**: pnpm
+- **言語設定**: 日本語
 
 ## 記事のフォーマット
 
-ファイル名: `blogs/{カテゴリ}/{YYYY}/{YYYYMMDD}.md`
+ファイル名: `src/content/posts/{カテゴリ}/{YYYY}/{YYYYMMDD}.md`
 
 ```markdown
 ---
 title: 記事タイトル
-date: YYYY-MM-DD
-tags:
- - タグ名
-categories:
- - deeplearning  # または automation / other
-prev: /blogs/{カテゴリ}/{YYYY}/{前の記事}.md
-next: /blogs/{カテゴリ}/{YYYY}/{次の記事}.md
+published: YYYY-MM-DD
+description: 記事の説明文（一文程度）
+image: （画像URL またはパス）
+tags: [タグ1, タグ2]
+category: deeplearning  # または automation / other
+draft: false
 ---
 
-![トップ画像](/blogimg/...)
-
-:::tip 要約
+:::tip
 * ポイント1
 * ポイント2
-:::
-
-<!-- more -->
-
-::: warning 目次
-
-[[TOC]]
 :::
 
 ## 本文...
@@ -79,17 +69,23 @@ next: /blogs/{カテゴリ}/{YYYY}/{次の記事}.md
 
 ### ローカル開発
 ```bash
-cd blog_to_netlify
-yarn dev      # 開発サーバー起動（localhost:8080）
+cd yurudeep
+pnpm dev      # 開発サーバー起動
 ```
 
 ### ビルド & デプロイ
 ```bash
-cd blog_to_netlify
-yarn build    # dist/ にビルド
+cd yurudeep
+pnpm build    # dist/ にビルド
 git add .
 git commit -m "記事追加 or 更新内容"
-git push      # GitLab pushで自動的にNetlifyへデプロイ
+git push      # GitHub pushで自動的にNetlifyへデプロイ
+```
+
+### 新規記事作成
+```bash
+cd yurudeep
+pnpm new-post   # 対話形式で新記事ファイルを生成
 ```
 
 ## カテゴリ一覧
@@ -114,9 +110,18 @@ git push      # GitLab pushで自動的にNetlifyへデプロイ
 
 - `.claude/rules/reference.md` — 調査資料をまとめる際の引用スタイル（番号付き引用形式）
 
+### Claudeとの共同編集表示
+
+記事をClaudeと共同で執筆・編集した場合、冒頭の `:::tip` 要約ブロックの前に以下のブロックを挿入すること。
+
+```markdown
+:::tip この記事について
+Claude（Anthropic）との共同編集により作成されました。
+:::
+```
+
 ## 注意事項
 
 - `dist/` はビルド成果物のため直接編集しない
-- 記事の `prev`/`next` リンクは手動で設定が必要
-- 画像は `.vuepress/public/blogimg/` 以下に配置
+- 画像は `public/blogimg/` 以下に配置
 - `node_modules/` は変更しない

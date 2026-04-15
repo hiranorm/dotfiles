@@ -5,9 +5,17 @@
 - `gdrive/` — Google Drive（マイドライブ）のシンボリックリンク
   - 実体: `~/Library/CloudStorage/GoogleDrive-hira.euclid.norm.root2@gmail.com/マイドライブ`
   - Google Drive for Desktop が起動していれば自動でアクセス可能
+- **作業ディレクトリ: `gdrive/kaggle_experiments/`**
+  - 競合ごとのディレクトリはここに置かれる
+  - フルパス: `~/kaggle_workspace/gdrive/kaggle_experiments/{competition-name}/`
 
 ```
-{competition-name}/
+gdrive/kaggle_experiments/
+└── {competition-name}/
+├── research/                # コンペ・技術調査資料
+│   ├── competition_overview.md
+│   ├── past_winners.md
+│   └── sota_models.md
 ├── EXP/
 │   ├── EXP_SUMMARY.md       # 実験履歴の一元管理（AIの記憶補助）
 │   ├── EXP000/              # ベースライン実験
@@ -138,6 +146,55 @@ return image, targets, depth_tensor
 - OOF 最適化アンサンブル（OOF では改善するが LB に転移しないことが多い）
 - Hand Labeling によるノイズクリーニング（過学習パターン）
 -->
+
+## コンペ調査（research ディレクトリ）
+
+各コンペの調査資料は `{competition-name}/research/` に保存する。
+
+```
+{competition-name}/research/
+├── competition_overview.md  # コンペ概要・データ・評価指標・タイムライン
+├── past_winners.md          # 過去の優勝アプローチ・有効手法・無効手法
+└── sota_models.md           # SOTAモデル・論文リファレンス
+```
+
+**調査フロー：**
+1. Kaggle CLI でコンペ基本情報を取得
+2. WebSearch / WebFetch でコンペ詳細ページ・Discussionを調査
+3. Papers with Code（paperswithcode.com）で学術SOTAを調査
+4. arXiv / GitHub で過去の優勝解法・関連論文を調査
+5. `research/` 以下に上記3ファイルとして保存
+
+**有力な調査ソース：**
+- `~/.local/bin/kaggle competitions list --category research --csv` — コンペ基本情報
+- [paperswithcode.com](https://paperswithcode.com) — SOTA手法・ベンチマーク（アクセス可）
+- [arxiv.org](https://arxiv.org) — 論文
+- CLEF working notes（年次論文集） — BirdCLEF系の解法論文
+- Kaggle Discussion（WebFetch不可; WebSearchで検索）
+- GitHub（優勝者のリポジトリ）
+
+**注意：**
+- Kaggle 公式ページは JS レンダリングが必要なため WebFetch では取得不可
+- Papers with Code は WebFetch でアクセス可能
+
+## コンペ情報の収集
+
+開催中のメダル付与コンペ一覧は `gdrive/kaggle_experiments/competition_list/` に日付つきファイル名（`YYYY-MM-DD_active-medal-competitions.md`）で保存する。
+
+**収集フロー：**
+1. Kaggle CLI で各カテゴリを取得する：
+   ```bash
+   ~/.local/bin/kaggle competitions list --category featured --csv
+   ~/.local/bin/kaggle competitions list --category research --csv
+   ```
+2. 締め切りが今日以降のものに絞る
+3. `gdrive/kaggle_experiments/competition_list/YYYY-MM-DD_active-medal-competitions.md` に保存
+
+**注意：**
+- Kaggle 認証情報は `~/.kaggle/kaggle.json` にある
+- CLI は `~/.local/bin/kaggle`（pipx でインストール済み）
+- メダル付与対象は Featured・Research カテゴリ（masters/playground は対象外）
+- Kaggle 公式ページは JS レンダリングが必要なため WebFetch では取得不可
 
 ## AIへの依頼時の注意
 
