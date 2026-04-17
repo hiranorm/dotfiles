@@ -12,27 +12,28 @@
 ```
 gdrive/kaggle_experiments/
 └── {competition-name}/
-├── research/                # コンペ・技術調査資料
-│   ├── competition_overview.md
-│   ├── past_winners.md
-│   └── sota_models.md
-├── EXP/
-│   ├── EXP_SUMMARY.md       # 実験履歴の一元管理（AIの記憶補助）
-│   ├── EXP000/              # ベースライン実験
-│   │   ├── train.py         # 学習スクリプト（Colab で実行）
-│   │   ├── infer.py         # 推論スクリプト（Kaggle Notebooks で実行）
-│   │   └── config/
-│   │       ├── child-exp000.yaml  # パラメータのみ変える軽量実験
-│   │       └── child-exp001.yaml
-│   └── EXP001/              # アーキテクチャ変更など大きな実験
-│       ├── train.py
-│       └── infer.py
-├── data/
-│   ├── inputs/              # 入力データ（画像等）
-│   └── outputs/             # 実験結果（ログ、モデル重み）
-├── notebooks/
-│   └── run.ipynb            # 共通ランナー（パラメータを渡してEXP/を呼ぶだけ）
-└── scripts/                 # ユーティリティスクリプト
+    ├── research/                # コンペ・技術調査資料
+    │   ├── competition_overview.md
+    │   ├── past_winners.md
+    │   └── sota_models.md
+    ├── MEMORY.md                # 現在地・次アクション・設計決定（会話をまたぐ作業メモ）
+    ├── EXP/
+    │   ├── EXP_SUMMARY.md       # 実験履歴の一元管理（AIの記憶補助）
+    │   ├── EXP000/              # ベースライン実験
+    │   │   ├── train.py         # 学習スクリプト（Colab で実行）
+    │   │   ├── infer.py         # 推論スクリプト（Kaggle Notebooks で実行）
+    │   │   └── config/
+    │   │       ├── child-exp000.yaml  # パラメータのみ変える軽量実験
+    │   │       └── child-exp001.yaml
+    │   └── EXP001/              # アーキテクチャ変更など大きな実験
+    │       ├── train.py
+    │       └── infer.py
+    ├── data/
+    │   ├── inputs/              # 入力データ（画像等）
+    │   └── outputs/             # 実験結果（ログ、モデル重み）
+    ├── notebooks/
+    │   └── run.ipynb            # 共通ランナー（パラメータを渡してEXP/を呼ぶだけ）
+    └── scripts/                 # ユーティリティスクリプト
 ```
 
 ## 実験管理システム（EXP + child-exp）
@@ -68,6 +69,25 @@ gdrive/kaggle_experiments/
 ```
 EXP113 の下に child-exp003 を作成して、loss を SmoothL1 に変更して
 ```
+
+## MEMORY.md の運用ルール
+
+**目的:** 会話をまたいで現在地・次アクション・設計決定を引き継ぐ作業メモ。
+`EXP_SUMMARY.md`（実験スコアの記録）とは別物。
+
+**AIへの指示:**
+
+### 会話の開始時
+1. `MEMORY.md` を読んで現在地と次アクションを把握する
+2. 作業後は「次のアクション」と「完了済み」を更新する
+
+### 設計決定を下したとき
+- 「なぜその選択をしたか」を「主要な設計決定」テーブルに追記する
+
+### 作業が完了したとき
+- 対応するチェックボックスを `[x]` に変更し、新たな未完了タスクを追記する
+
+---
 
 ## EXP_SUMMARY.md の運用ルール
 
