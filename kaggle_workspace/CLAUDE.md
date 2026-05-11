@@ -72,21 +72,99 @@ gdrive/kaggle_experiments/
 EXP113 の下に child-exp003 を作成して、loss を SmoothL1 に変更して
 ```
 
-## MEMORY.md の運用ルール
+## 作業管理ルール
+
+コンペごとに以下のいずれかのスタイルで管理する。
+
+### A. Backlog.md スタイル（**birdclef-2026 で運用中、2026-05-11 〜**）
+
+birdclef-2026 のみ採用。タスク管理を `backlog/` ディレクトリで Kanban 形式に切り出す。設計決定とアイディアの肥大化を防ぐのが目的。
+
+**backlog CLI のインストール（未インストール時）:**
+
+```bash
+# 確認
+which backlog && backlog --version
+
+# 未インストールなら npm（volta 経由）でグローバルインストール
+npm install -g backlog.md
+
+# bun が入っている環境では bun の方が公式推奨
+bun install -g backlog.md
+```
+
+インストール後、`/Users/hiranot/.volta/bin/backlog` 等が PATH に入っていることを確認。新規コンペで Backlog.md スタイルを採用する場合は以下のコマンドで初期化:
+
+```bash
+cd {competition-name}
+backlog init "{competition-name}" \
+  --no-git \
+  --defaults \
+  --task-prefix TASK \
+  --zero-padded-ids 3 \
+  --agent-instructions claude \
+  --integration-mode cli \
+  --backlog-dir backlog
+
+# 初期化後、backlog/config.yml の statuses と labels を編集:
+#   statuses: ["To Do", "In Progress", "Done", "Frozen"]
+#   labels:   ["exp001", "exp002", ..., "ensemble", "infer-only", "infra", "data", "research"]
+```
+
+**重要:** `backlog init` は `{competition-name}/CLAUDE.md` に backlog CLI の詳細インストラクション（約 31KB）を生成する。これは project-scoped 指示として AI が読むので消さない。
+
+ディレクトリ構成（コンペ直下）:
+```
+{competition-name}/
+├── backlog/
+│   ├── tasks/        # TASK-001 等のアクティブ/凍結タスク
+│   ├── decisions/    # decision-001 等の設計決定 (ADR)
+│   ├── docs/         # backlog 用ドキュメント
+│   ├── drafts/       # コミット前のアイディア
+│   ├── milestones/   # マイルストーン
+│   └── completed/    # 完了タスクのアーカイブ先
+├── EXP/EXP_SUMMARY.md  # 実験結果と考察の履歴のみ（次アクションは書かない）
+└── (MEMORY.md は廃止)
+```
+
+**AI への指示（Backlog.md スタイル時）:**
+
+会話の開始時:
+1. `backlog task list --plain` で現在のタスク状況を確認（`In Progress` → `To Do` 優先順）
+2. 必要なら `backlog task TASK-N --plain` で詳細を読む
+3. ユーザーから「TASK-N をやって」「次の P1 を進めて」のような指示が来たら該当タスクで作業を開始する
+
+設計決定を下したとき:
+- `backlog decision create "決定タイトル"` でスケルトン作成 → ファイルを直接編集して `## Context` / `## Decision` / `## Consequences` を埋める
+- date は決定した日付（auto-fill ではなく実際の決定日）
+
+タスクを進めたとき:
+- `backlog task edit TASK-N -s "In Progress"` で着手をマーク
+- 完了したら `backlog task edit TASK-N -s Done`
+- 凍結（再着手しない判断）したら `backlog task edit TASK-N -s Frozen`
+- ユーザーから新しい作業依頼が来たら `backlog task create "..."` で新規タスク作成
+
+新規タスク作成時の規約:
+- `--priority high/medium/low`（high = 直近着手、low = wishlist）
+- `--labels` は `config.yml` の labels から選ぶ（exp001, exp002, exp003, exp004, ensemble, infer-only, infra, data, research）
+- `--ac` で受け入れ条件を 2〜4 個書く（後で `backlog task edit TASK-N --check-ac` でチェック可能）
+- 依存関係があれば `--dep TASK-M`
+
+### B. MEMORY.md スタイル（**nemotron / orbit-wars / arc-prize-2026 等、従来運用**）
 
 **目的:** 会話をまたいで現在地・次アクション・設計決定を引き継ぐ作業メモ。
 `EXP_SUMMARY.md`（実験スコアの記録）とは別物。
 
 **AIへの指示:**
 
-### 会話の開始時
+会話の開始時:
 1. `MEMORY.md` を読んで現在地と次アクションを把握する
 2. 作業後は「次のアクション」と「完了済み」を更新する
 
-### 設計決定を下したとき
+設計決定を下したとき:
 - 「なぜその選択をしたか」を「主要な設計決定」テーブルに追記する
 
-### 作業が完了したとき
+作業が完了したとき:
 - 対応するチェックボックスを `[x]` に変更し、新たな未完了タスクを追記する
 
 ---
