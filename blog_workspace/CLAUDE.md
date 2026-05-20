@@ -88,6 +88,19 @@ cd yurudeep
 pnpm new-post   # 対話形式で新記事ファイルを生成
 ```
 
+### SNS告知文の生成
+```bash
+cd yurudeep
+pnpm sns-post <記事ファイルパス>            # X/Bluesky用告知文を生成（実体は scripts/gen-sns-post.js）
+pnpm sns-post <記事ファイルパス> --force    # 既存ファイルを上書き
+```
+
+- 出力先は `sns-posts/{カテゴリ}/{YYYY}/{YYYYMMDD}.md`
+- 本文は `title` + `description` + URL + ハッシュタグの構成
+- ハッシュタグは `category` のデフォルトタグ（`#Web開発` 等）＋ frontmatter の `tags` の組み合わせ
+- X 280字 / Bluesky 300字を超えると警告が出る
+- 手書きでファイルを作らず、必ずこのスクリプトを通すこと（タグ整合性・文字数チェック・フォーマット統一のため）
+
 ## カテゴリ一覧
 
 カテゴリ設計の詳細方針・振り分け基準は `CATEGORY.md` を参照すること。
