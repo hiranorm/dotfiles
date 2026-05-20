@@ -128,6 +128,7 @@ pnpm sns-post <記事ファイルパス> --force    # 既存ファイルを上�
 詳細なルールは `.claude/rules/` 以下のファイルを参照すること。
 
 - `.claude/rules/reference.md` — 調査資料をまとめる際の引用スタイル（番号付き引用形式）
+- `.claude/rules/writing-style.md` — 記事の文体・記法ルール（「」と太字の併用禁止 等）
 
 ### 記事タイトルの設計
 
