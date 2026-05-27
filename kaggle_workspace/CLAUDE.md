@@ -2,52 +2,73 @@
 
 ## ディレクトリ構成
 
-- `gdrive/` — Google Drive（マイドライブ）のシンボリックリンク
-  - 実体: `~/Library/CloudStorage/GoogleDrive-hira.euclid.norm.root2@gmail.com/マイドライブ`
+- `gdrive/` — Google Drive のシンボリックリンク
+  - 実体: `~/Library/CloudStorage/GoogleDrive-hira.euclid.norm.root2@gmail.com`（Drive ルート）
+  - マイドライブはこの下にある（`gdrive/マイドライブ/`）
   - Google Drive for Desktop が起動していれば自動でアクセス可能
-- **作業ディレクトリ: `gdrive/kaggle_experiments/`**
+- **作業ディレクトリ: `gdrive/マイドライブ/kaggle_experiments/`**
   - 競合ごとのディレクトリはここに置かれる
-  - フルパス: `~/kaggle_workspace/gdrive/kaggle_experiments/{competition-name}/`
+  - フルパス: `~/kaggle_workspace/gdrive/マイドライブ/kaggle_experiments/{competition-name}/`
+
+### 新規コンペは `competition-template/` からコピーして始める
+
+`gdrive/マイドライブ/kaggle_experiments/competition-template/` に雛形がある。新規コンペは
+`cp -r competition-template {competition-name}` で複製し、`competition-template/SETUP.md` の手順に従う。
+以下のディレクトリ構成・命名規則は **2026-05-27 以降の新規コンペ向け**（旧コンペは末尾の互換性注記を参照）。
 
 ```
-gdrive/kaggle_experiments/
+gdrive/マイドライブ/kaggle_experiments/
 └── {competition-name}/
-    ├── research/                # コンペ・技術調査資料
+    ├── SETUP.md                # 立ち上げ手順
+    ├── RESULTS.md              # 実験結果履歴（CV・LB・考察）※コンペ直下
+    ├── GUARDRAILS.md           # ダメだったこと（LB を下げたパターン）※コンペ直下
+    ├── IDEAS.md                # 実験アイデア（着手前の brainstorm）※コンペ直下
+    ├── research/               # コンペ・技術調査資料
     │   ├── competition_overview.md
     │   ├── past_winners.md
     │   └── sota_models.md
-    ├── MEMORY.md                # 現在地・次アクション・設計決定（会話をまたぐ作業メモ）
-    ├── EXP/
-    │   ├── EXP_SUMMARY.md       # 実験履歴の一元管理（AIの記憶補助）
-    │   ├── EXP000/              # ベースライン実験
-    │   │   ├── train.py         # 学習スクリプト（Colab で実行）
-    │   │   ├── infer.py         # 推論スクリプト（Kaggle Notebooks で実行）
+    ├── exp/
+    │   ├── exp001/             # 実験コード一式（全小文字）
+    │   │   ├── train.py        # 学習スクリプト（Colab で実行）
+    │   │   ├── infer.py        # 推論スクリプト（Kaggle Notebooks で実行）
+    │   │   ├── dataset.py
+    │   │   ├── models.py
     │   │   └── config/
-    │   │       ├── child-exp000.yaml  # パラメータのみ変える軽量実験
-    │   │       └── child-exp001.yaml
-    │   └── EXP001/              # アーキテクチャ変更など大きな実験
+    │   │       ├── exp001-001.yaml  # パラメータのみ変える軽量実験
+    │   │       └── exp001-002.yaml
+    │   └── exp002/             # アーキテクチャ変更など大きな実験
     │       ├── train.py
     │       └── infer.py
     ├── data/
     │   ├── inputs/              # 入力データ（画像等）
     │   └── outputs/             # 実験結果（ログ、モデル重み）
+    │       └── exp001-001_YYYY-MM-DD/
     ├── notebooks/
     │   ├── eda.ipynb            # 探索的データ分析
-    │   ├── train.ipynb          # 学習ランナー（パラメータを渡してEXP/を呼ぶだけ）
+    │   ├── train.ipynb          # 学習ランナー（パラメータを渡して exp/ を呼ぶだけ）
     │   └── infer.ipynb          # 推論・サブミット用
+    ├── backlog/                 # タスク管理（backlog init で生成、A スタイル）
     └── scripts/                 # ユーティリティスクリプト
 ```
 
-## 実験管理システム（EXP + child-exp）
+## 実験管理システム（exp{NNN}-{MMM}）
+
+### 命名規則（重要）
+
+- 実験 ID は **全小文字** `exp{NNN}-{MMM}`（例: `exp001-001`）。
+  - 親 = `exp001`（コード一式 `exp/exp001/`）、子 = `-001`（config `config/exp001-001.yaml`）。
+- **大文字を使わない理由**: Kaggle 上でモデルのパス名が小文字化され、パス不一致のバグが出るため。
+  ディレクトリ名・config 名・config 内の `exp_id`・Kaggle Dataset 名すべて小文字で統一する。
+- 出力は `data/outputs/{exp_id}_{YYYY-MM-DD}/`（例: `data/outputs/exp001-001_2026-06-01/`）。
 
 ### 大きな実験（コード変更あり）
 
 アーキテクチャ・データ処理・損失関数などのコード変更を伴う場合：
-1. 新しい実験ディレクトリ `EXP/EXP{N}/` を作成する
+1. 新しい実験ディレクトリ `exp/exp{N}/` を作成する
 2. `train.py` と `infer.py` を必ず両方含める
-3. `exp_no` は連番でインクリメント（EXP000, EXP001, EXP002, ...）
+3. 親番号は連番でインクリメント（exp001, exp002, exp003, ...）
 
-**新 EXP が必要なシナリオ例：**
+**新 exp が必要なシナリオ例：**
 - モデルアーキテクチャの変更
 - データ拡張パイプラインの変更
 - 損失関数の変更
@@ -56,11 +77,11 @@ gdrive/kaggle_experiments/
 ### 小さな実験（パラメータ変更のみ）
 
 ハイパーパラメータのチューニングのみの場合：
-1. 同じ `EXP{N}/train.py` を使い続ける
-2. 新しい config ファイル `EXP/EXP{N}/config/child-exp{M}.yaml` を作成する
-3. `child_no` は連番でインクリメント（000, 001, 002, ...）
+1. 同じ `exp/exp{N}/train.py` を使い続ける
+2. 新しい config ファイル `exp/exp{N}/config/exp{N}-{M}.yaml` を作成する
+3. 子番号は連番でインクリメント（001, 002, 003, ...）
 
-**child-exp が適切なシナリオ例：**
+**子 config が適切なシナリオ例：**
 - 学習率・バッチサイズ・エポック数の変更
 - データ拡張の確率変更
 - 損失の重み変更
@@ -69,7 +90,7 @@ gdrive/kaggle_experiments/
 ### 指示の例
 
 ```
-EXP113 の下に child-exp003 を作成して、loss を SmoothL1 に変更して
+exp001 の下に exp001-003 を作成して、loss を SmoothL1 に変更して
 ```
 
 ## 作業管理ルール
@@ -123,9 +144,14 @@ backlog init "{competition-name}" \
 │   ├── drafts/       # コミット前のアイディア
 │   ├── milestones/   # マイルストーン
 │   └── completed/    # 完了タスクのアーカイブ先
-├── EXP/EXP_SUMMARY.md  # 実験結果と考察の履歴のみ（次アクションは書かない）
+├── RESULTS.md        # 実験結果と考察の履歴（コンペ直下）
+├── GUARDRAILS.md     # ダメだったこと（コンペ直下）
+├── IDEAS.md          # 実験アイデア（コンペ直下、着手可になったら task 化）
 └── (MEMORY.md は廃止)
 ```
+
+`IDEAS.md` は着手前の brainstorm プール、backlog の `tasks/` は着手可能になったアクション。
+アイデアが実行段階に入ったら `backlog task create` で task に昇格させる。
 
 **AI への指示（Backlog.md スタイル時）:**
 
@@ -169,33 +195,43 @@ backlog init "{competition-name}" \
 
 ---
 
-## EXP_SUMMARY.md の運用ルール
+## 記録ファイル（RESULTS / GUARDRAILS / IDEAS）の運用ルール
+
+新規コンペでは EXP_SUMMARY.md を 3 ファイルに分割し、**コンペ直下**に置く。
+（旧コンペは引き続き `EXP/EXP_SUMMARY.md` 1ファイル運用 — 互換性注記を参照）
+
+| ファイル | 役割 |
+|----------|------|
+| `RESULTS.md` | 実験結果履歴（CV・LB・fold スコア、考察、モデル比較テーブル） |
+| `GUARDRAILS.md` | ダメだったこと（LB を下げた / 効かなかったパターンと次回の指針） |
+| `IDEAS.md` | 実験アイデア（着手前の brainstorm。着手可になったら backlog task 化） |
 
 **重要：AIへの指示**
 
 ### ユーザーが LB スコアを報告したとき
-1. **即座に `EXP/EXP_SUMMARY.md` を読む**
+1. **即座に `RESULTS.md` を読む**
 2. 以下を更新する：
    - 該当実験に LB スコアを追記
-   - LB-CV ギャップを更新
-   - 改善・悪化の考察を追記
-   - モデル比較テーブルを更新
+   - CV-LB ギャップを更新
+   - 改善・悪化の考察を追記、モデル比較テーブルを更新
 3. 新ベストなら Competition Status セクションも更新
+4. LB を下げた原因が判明したら `GUARDRAILS.md` にも 1 項目として転記する
 
 ### ユーザーが新しいアイディアを求めたとき
-1. **まず `EXP/EXP_SUMMARY.md` を読む**（何を試したか、何が効いたか）
-2. 試行済みの手法を再提案しない
-3. 失敗した実験の教訓を踏まえて提案する
+1. **まず `RESULTS.md` と `GUARDRAILS.md` を読む**（何を試したか、何が効いたか / 効かなかったか）
+2. 試行済みの手法・GUARDRAILS にある失敗パターンを再提案しない
+3. 採用するアイデアは `IDEAS.md` に追記（着手するなら backlog task に昇格）
 
 ### ドキュメント基準
-- **成功した実験**：CV・LB・fold スコア、主な考察、前実験との比較
-- **失敗・中断した実験**：中断理由（遅すぎる・CV 改善なしなど）、得られた知見
+- **成功した実験**：CV・LB・fold スコア、主な考察、前実験との比較 → `RESULTS.md`
+- **失敗・中断した実験**：中断理由（遅すぎる・CV 改善なしなど）、得られた知見 → `RESULTS.md`、
+  LB を下げたパターンは `GUARDRAILS.md` にも転記
 
 ## 開発ワークフロー
 
 | 環境 | 用途 |
 |------|------|
-| **ローカル** | コード編集、EXP_SUMMARY.md 更新、実験管理 |
+| **ローカル** | コード編集、記録ファイル（RESULTS.md 等）更新、実験管理 |
 | **Google Colab** | 学習スクリプトの実行（GPU が必要） |
 | **Kaggle Notebooks** | 推論・サブミット（≤9h, インターネット不可） |
 
@@ -209,8 +245,8 @@ backlog init "{competition-name}" \
 ## コーディング方針
 
 - **ロジックは .py に書く**。ノートブックはパラメータを渡して呼び出すだけにする
-- `train.ipynb` は実験ごとに複製しない。`child-exp{N}.yaml` でパラメータを切り替える
-- 実験結果は `data/outputs/<YYYY-MM-DD_exp-name>/` に保存する
+- `train.ipynb` は実験ごとに複製しない。`exp{N}-{M}.yaml` でパラメータを切り替える
+- 実験結果は `data/outputs/{exp_id}_{YYYY-MM-DD}/`（例 `exp001-001_2026-06-01`）に保存する
 
 ### CRITICAL: 後方互換性の維持
 
@@ -300,5 +336,15 @@ return image, targets, depth_tensor
 
 - コード修正の依頼は `.py` ファイル単位で行う
 - ノートブックの JSON をそのまま渡さない
-- 実験パラメータの変更は `child-exp{N}.yaml` を対象にする
-- 新規実験の作成を依頼するときは「EXP{N} の下に child-exp を作って〜」と指定する
+- 実験パラメータの変更は `exp{N}-{M}.yaml` を対象にする
+- 新規実験の作成を依頼するときは「exp{N} の下に exp{N}-{M} を作って〜」と指定する
+
+## 互換性注記（旧コンペの運用）
+
+`nemotron` / `orbit-wars` / `arc-prize-2026` 等、**2026-05-27 より前**に立ち上げたコンペは
+旧運用のまま：
+- 実験ディレクトリは大文字 `EXP/EXP000/`、子 config は `child-exp{M}.yaml`
+- 実験記録は `EXP/EXP_SUMMARY.md`（1ファイル）、作業メモは `MEMORY.md`
+
+新規コンペ（`competition-template/` 由来）のみ `exp/exp001/` + `exp001-001.yaml` +
+`RESULTS.md` / `GUARDRAILS.md` / `IDEAS.md` を使う。混同しないこと。
